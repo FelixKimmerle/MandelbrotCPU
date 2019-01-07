@@ -117,6 +117,7 @@ Mandelbrot::~Mandelbrot()
     {
         (*x)->join();
         delete (*x);
+        *x = nullptr;
     }
     threads.clear();
 }

@@ -71,4 +71,4 @@ rund:
 	$(DBGEXE)
 
 test:
-	valgrind --leak-check=full -v $(DBGEXE) -d test.txt -o test2.txt
+	valgrind --leak-check=full --show-leak-kinds=all -v $(DBGEXE) -d test.txt -o test2.txt

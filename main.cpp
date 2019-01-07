@@ -18,7 +18,6 @@ int main()
     double m_Ddx = 0;
     double m_Ddy = 0;
     int max_iter = 100;
-    bool running = true;
     bool dirty = true;
     int smooth = false;
     bool adaptive = false;
@@ -34,20 +33,20 @@ int main()
     Mandelbrot mb;
 
     window.setVerticalSyncEnabled(vsync);
-    while (running)
+    while (window.isOpen())
     {
         sf::Event event;
         while (window.pollEvent(event))
         {
             if (event.type == sf::Event::Closed)
             {
-                running = false;
+                window.close();
             }
             else if (event.type == sf::Event::KeyPressed)
             {
                 if (event.key.code == sf::Keyboard::Escape)
                 {
-                    running = false;
+                    window.close();
                 }
                 else if (event.key.code == sf::Keyboard::Add)
                 {
@@ -129,6 +128,7 @@ int main()
                 double ratio = (double)event.size.width / (double)event.size.height;
                 fract.reset(-1.5 * ratio, 1.5 * ratio, -1.5, 1.5);
                 delete[] pixels;
+                pixels = nullptr;
                 pixels = new sf::Uint8[event.size.width * event.size.height * 4];
                 dirty = true;
                 window.setView(sf::View(sf::FloatRect(0, 0, event.size.width, event.size.height)));
@@ -204,6 +204,8 @@ int main()
             sf::sleep(sf::milliseconds(1));
         }
     }
+    delete[] pixels;
+    pixels = nullptr;
     std::cout << "Goodbye :)" << std::endl;
     return 0;
 }
