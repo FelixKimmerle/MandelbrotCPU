@@ -106,10 +106,13 @@ Mandelbrot::Mandelbrot(/* args */) : Screen(0, 0, 0, 0), Frac(0, 0, 0, 0)
 {
     number = std::thread::hardware_concurrency();
     isRun = true;
+    fThreads = 0;
     for (unsigned int y = 0; y < number; y++)
     {
         threads.push_back(new std::thread(&Mandelbrot::Worker, this, y));
     }
+    auto mmm = std::unique_lock<std::mutex>(m_mNotifyMutex);
+    m_cvDoNotify.wait(mmm);
 }
 
 Mandelbrot::~Mandelbrot()
@@ -126,6 +129,13 @@ Mandelbrot::~Mandelbrot()
 }
 void Mandelbrot::Worker(unsigned int id)
 {
+    mutex.lock();
+    fThreads++;
+    if (fThreads >= number)
+    {
+        m_cvDoNotify.notify_all();
+    }
+    mutex.unlock();
     while (isRun)
     {
         auto mmm = std::unique_lock<std::mutex>(m_mWorkMutex);
@@ -152,7 +162,7 @@ void Mandelbrot::Worker(unsigned int id)
                 zx2 = zx * zx;
                 zy2 = zy * zy;
             }
-            
+
             uchar4 color = GetColor(n, m_iter_max, m_color);
             pixels[i * 4] = color.r;
             pixels[i * 4 + 1] = color.g;

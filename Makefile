@@ -1,15 +1,22 @@
 #
 # Compiler flags
 #
-CC     = g++
+CC     = g++ -I./ -I./Imgui/
 CFLAGS = -Wall -std=c++17
 LIBS	= -lsfml-system -lsfml-window -lsfml-graphics -lpthread
 #
 # Project files
 #
-SRCS = $(wildcard *.cpp)
+
+rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))
+
+FOLDERS =
+
+SRCS = $(call rwildcard, , *.cpp)
+DEPS = $(call rwildcard, , *.d)
+-include $(DEPS)
 OBJS = $(SRCS:.cpp=.o)
-EXE  = MEXP
+EXE  = MandelbrotCPU
 
 #
 # Debug build settings
@@ -31,6 +38,7 @@ RELCFLAGS = -O3 -Ofast -ffast-math -DNDEBUG -Werror -Wextra
 
 # Default build
 all: prep release
+remake: clean release
 
 #
 # Debug rules
@@ -41,7 +49,7 @@ $(DBGEXE): $(DBGOBJS)
 	$(CC) $(CFLAGS) $(DBGCFLAGS) -o $(DBGEXE) $^ $(LIBS)
 
 $(DBGDIR)/%.o: %.cpp
-	$(CC) -c $(CFLAGS) $(DBGCFLAGS) -o $@ $<
+	$(CC) -c $(CFLAGS) $(DBGCFLAGS) -MMD -o $@ $<
 
 #
 # Release rules
@@ -52,18 +60,22 @@ $(RELEXE): $(RELOBJS)
 	$(CC) $(CFLAGS) $(RELCFLAGS) -o $(RELEXE) $^ $(LIBS)
 
 $(RELDIR)/%.o: %.cpp
-	$(CC) -c $(CFLAGS) $(RELCFLAGS) -o $@ $<
+	$(CC) -c $(CFLAGS) $(RELCFLAGS) -MMD -o $@ $<
 
 #
 # Other rules
 #
 prep:
 	@mkdir -p $(DBGDIR) $(RELDIR)
+ifneq ($(FOLDERS),)
+	@cd $(DBGDIR) && mkdir -p $(FOLDERS)
+	@cd $(RELDIR) && mkdir -p $(FOLDERS)
+endif
 
 remake: clean all
 
 clean:
-	rm -f $(RELEXE) $(RELOBJS) $(DBGEXE) $(DBGOBJS) $(RELDIR)/*.o $(DBGDIR)/*.o
+	rm -f $(RELEXE) $(RELOBJS) $(DBGEXE) $(DBGOBJS) $(RELDIR)/*.o $(DBGDIR)/*.o $(RELDIR)/*.d $(DBGDIR)/*.d $(DEPS)
 run:
 	$(RELEXE)
 
@@ -71,4 +83,4 @@ rund:
 	$(DBGEXE)
 
 test:
-	valgrind --leak-check=full --show-leak-kinds=all -v $(DBGEXE) -d test.txt -o test2.txt
+	valgrind --undef-value-errors=no -v $(DBGEXE)
