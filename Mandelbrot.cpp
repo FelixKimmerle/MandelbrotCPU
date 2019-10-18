@@ -1,6 +1,9 @@
 #include "Mandelbrot.hpp"
 #include <cmath>
 #include <iostream>
+
+#include <complex>
+
 struct uchar4
 {
     uchar4(char r, char g, char b, char a)
@@ -139,7 +142,7 @@ void Mandelbrot::Worker(unsigned int id)
             n = 0;
             int xc = i % (int)(Screen.width());
             int yc = (int)((i - xc) / Screen.width());
-            double x = (double)xc / (double)Screen.width() * Frac.width() + Frac.x_min();  // x1
+            double x = (double)xc / (double)Screen.width() * Frac.width() + Frac.x_min();   // x1
             double y = (double)yc / (double)Screen.height() * Frac.height() + Frac.y_min(); // x2
 
             for (; n < m_iter_max && zx2 + zy2 < 4; n++)
@@ -149,6 +152,7 @@ void Mandelbrot::Worker(unsigned int id)
                 zx2 = zx * zx;
                 zy2 = zy * zy;
             }
+            
             uchar4 color = GetColor(n, m_iter_max, m_color);
             pixels[i * 4] = color.r;
             pixels[i * 4 + 1] = color.g;
