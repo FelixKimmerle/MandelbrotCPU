@@ -13,7 +13,6 @@ private:
   unsigned int number;
 
   std::condition_variable m_cvDoWork;
-  std::mutex m_mWorkMutex;
 
   std::condition_variable m_cvDoNotify;
   std::mutex m_mNotifyMutex;
@@ -34,8 +33,7 @@ private:
   unsigned int fThreads;
 
 public:
-    Mandelbrot(/* args */);
-    ~Mandelbrot();
-    void update(sf::Uint8 *pixels, Dimention<double> &screen, Dimention<double> &frac, unsigned int max_iter, int color);
+  Mandelbrot(/* args */);
+  ~Mandelbrot();
+  void update(sf::Uint8 *pixels, Dimention<double> &screen, Dimention<double> &frac, unsigned int max_iter, int color);
 };
-

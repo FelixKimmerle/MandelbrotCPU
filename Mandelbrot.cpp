@@ -127,8 +127,11 @@ Mandelbrot::~Mandelbrot()
     }
     threads.clear();
 }
+sf::Clock xclock;
 void Mandelbrot::Worker(unsigned int id)
 {
+    std::mutex m_mWorkMutex;
+
     mutex.lock();
     fThreads++;
     if (fThreads >= number)
@@ -139,11 +142,13 @@ void Mandelbrot::Worker(unsigned int id)
     while (isRun)
     {
         auto mmm = std::unique_lock<std::mutex>(m_mWorkMutex);
+        std::cout << "Hold Thread: " << id << " at: " << xclock.getElapsedTime().asMilliseconds() << std::endl;
         m_cvDoWork.wait(mmm);
         if (!isRun)
         {
             break;
         }
+        std::cout << "Start Thread: " << id << " at: " << xclock.getElapsedTime().asMilliseconds() << std::endl;
         double zx, zy, zx2, zy2;
         unsigned int n = 0;
         for (unsigned int i = id; i < m_Ix * m_Iy; i += number)
@@ -169,6 +174,8 @@ void Mandelbrot::Worker(unsigned int id)
             pixels[i * 4 + 2] = color.b;
             pixels[i * 4 + 3] = color.a;
         }
+        std::cout << "End Thread: " << id << " at: " << xclock.getElapsedTime().asMilliseconds() << std::endl;
+
         mutex.lock();
         fThreads++;
         if (fThreads >= number)
@@ -190,7 +197,10 @@ void Mandelbrot::update(sf::Uint8 *pixels, Dimention<double> &screen, Dimention<
     m_color = color;
     this->pixels = pixels;
     fThreads = 0;
+    xclock.restart();
+    std::cout << "-----------------" << std::endl;
     m_cvDoWork.notify_all();
     auto mmm = std::unique_lock<std::mutex>(m_mNotifyMutex);
+
     m_cvDoNotify.wait(mmm);
 }
